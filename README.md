@@ -27,7 +27,11 @@ Open the app at `/` : chat thread + `POST /api/v1/chat` (see **Chat UI & API** b
 - http://162.19.241.44:8000/health (backend)
 - http://162.19.241.44:8000/docs (endpoint documentation backend)
 - TODO: administration interface (connexion user, see stats)
-- TODO: iframe endpoint??
+- http://162.19.241.44:3000/embed (script embed for other website)
+
+```
+<script src="http://162.19.241.44:3000/widget.js"></script>
+``` 
 
 
 ## Technology
