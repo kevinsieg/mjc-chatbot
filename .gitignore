@@ -10,6 +10,7 @@ out/
 dist/
 *.log
 .DS_Store
+frontend/.env.local
 
 # Temporary: ignore local scripts experiments
 scripts/
@@ -17,3 +18,4 @@ scripts/
 # Claude Code
 CLAUDE.md
 .claude/
+.vscode/
