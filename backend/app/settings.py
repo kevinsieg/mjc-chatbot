@@ -1,4 +1,10 @@
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Load repo-root .env without overriding variables already set in the environment.
+load_dotenv(Path(__file__).parent.parent.parent / ".env")
 
 
 def _env_int(name: str, default: int) -> int:
