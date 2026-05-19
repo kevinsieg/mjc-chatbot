@@ -1,0 +1,32 @@
+.main {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  max-width: 800px;
+  margin: 60px auto;
+  padding: 0 1rem;
+  color: #333;
+}
+
+.title {
+  color: #0070b8;
+}
+
+.list {
+  line-height: 1.6;
+}
+
+.snippet {
+  background: #f1f1f1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.9rem;
+}
+
+.links {
+  margin-top: 2rem;
+  font-size: 0.95rem;
+}
+
+.links a {
+  color: #0070b8;
+}
