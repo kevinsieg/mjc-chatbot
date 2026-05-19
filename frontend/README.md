@@ -4,7 +4,7 @@
 
 **Next.js 16 (App Router)** · **TypeScript strict** · **CSS Modules**
 
-Pages are server components by default. Only `Chat` and `HealthBadge` are `"use client"` — everything else renders on the server, keeping the initial payload small.
+Pages are server components by default. `Chat`, `HealthBadge`, and `HomeChatPanel` are `"use client"` — everything else renders on the server, keeping the initial payload small.
 
 Styling is CSS Modules only — no UI framework, no utility classes. All colours and brand values are defined once in `brand/brand.ts` and injected as CSS custom properties on `<body>` in `layout.tsx`. Reskinning the UI means editing one file.
 
@@ -19,7 +19,7 @@ No external icon or animation libraries — icons are inline SVGs, animations ar
 ```
 app/
   layout.tsx          Root layout: injects brand CSS variables, sets metadata
-  page.tsx            Home page (server component): header, Chat, footer
+  page.tsx            Home page (server component): header, HomeChatPanel, footer
   globals.css         Reset, body font, background gradient
   page.module.css     Page-level layout styles
   icon.png            Browser tab favicon (512×512, auto-detected by Next.js)
@@ -27,6 +27,9 @@ app/
 components/
   Chat.tsx            Chat thread + input bar (client component)
   Chat.module.css
+  HomeChatPanel.tsx   Home-only: Chat + editable system prompt (sessionStorage)
+  SystemPromptEditor.tsx
+  SystemPromptEditor.module.css
   HealthBadge.tsx     API health indicator in the header (client component)
   HealthBadge.module.css
 
@@ -62,6 +65,7 @@ The main chat interface. Manages message state, sends turns to the backend, and 
 
 **Behaviour**
 - Sends `POST /api/backend/api/v1/chat` with the full message history on each turn
+- Optional prop `systemPromptOverride`: when set (home page only), includes `system_prompt` in the request body
 - On error: reverts the optimistic user message and restores the draft
 - Textarea auto-resizes with content; `Enter` sends, `Shift+Enter` adds a newline
 - Scrolls to the bottom on every new message or while sending

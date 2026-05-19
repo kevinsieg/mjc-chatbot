@@ -7,12 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.db_util import ensure_schema_at_startup
 from app.routers import chat as chat_router
+from app.system_prompt import load_default_system_prompt
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Run DDL migrations on startup (idempotent)."""
     await asyncio.to_thread(ensure_schema_at_startup)
+    await asyncio.to_thread(load_default_system_prompt)
     yield
 
 

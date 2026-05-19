@@ -2,8 +2,19 @@ from fastapi import APIRouter, HTTPException
 
 from app.rag_service import answer_chat_turn
 from app.schemas.chat import ChatRequest, ChatResponse
+from app.schemas.system_prompt import SystemPromptResponse
+from app.system_prompt import load_default_system_prompt
 
 router = APIRouter()
+
+
+@router.get("/system-prompt", response_model=SystemPromptResponse)
+def get_system_prompt() -> SystemPromptResponse:
+    """Return the file-based default system prompt for the chat UI."""
+    try:
+        return SystemPromptResponse(default=load_default_system_prompt())
+    except RuntimeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @router.post("/chat", response_model=ChatResponse)

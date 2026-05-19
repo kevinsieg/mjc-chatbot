@@ -95,7 +95,12 @@ const BotBubble = memo(function BotBubble({ message }: { message: UiMessage }) {
   );
 });
 
-export function Chat() {
+type ChatProps = {
+  /** When set, sent as system_prompt on each chat request (home page override). */
+  systemPromptOverride?: string;
+};
+
+export function Chat({ systemPromptOverride }: ChatProps = {}) {
   const [messages, setMessages] = useState<UiMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -143,6 +148,9 @@ export function Chat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: nextThread.map((m) => ({ role: m.role, content: m.content })),
+          ...(systemPromptOverride !== undefined
+            ? { system_prompt: systemPromptOverride }
+            : {}),
         }),
         signal: abortRef.current.signal,
       });
@@ -174,7 +182,7 @@ export function Chat() {
       setSending(false);
       abortRef.current = null;
     }
-  }, [draft, messages, sending]);
+  }, [draft, messages, sending, systemPromptOverride]);
 
   return (
     <section className={styles.wrap} aria-label="Conversation avec le chatbot">
