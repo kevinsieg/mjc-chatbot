@@ -30,6 +30,8 @@ components/
   HomeChatPanel.tsx   Home-only: Chat + editable system prompt (sessionStorage)
   SystemPromptEditor.tsx
   SystemPromptEditor.module.css
+  RagKnowledgeViewer.tsx
+  RagKnowledgeViewer.module.css
   HealthBadge.tsx     API health indicator in the header (client component)
   HealthBadge.module.css
 

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Chat } from "@/components/Chat";
+import { RagKnowledgeViewer } from "@/components/RagKnowledgeViewer";
 import { SystemPromptEditor } from "@/components/SystemPromptEditor";
 
 const SESSION_STORAGE_KEY = "mjc-system-prompt-override";
@@ -74,6 +75,7 @@ export function HomeChatPanel() {
         onChange={persistPrompt}
         onReset={handleReset}
       />
+      <RagKnowledgeViewer />
     </>
   );
 }
