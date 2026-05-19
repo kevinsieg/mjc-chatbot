@@ -7,11 +7,7 @@ from app.db_util import ensure_document_chunks_table, get_connection
 from app.mistral_service import chat_complete, embed_texts
 from app.schemas.chat import ChatRequest
 from app.settings import get_mistral_api_key, get_rag_top_k
-
-SYSTEM_PROMPT = """Tu es l'assistant de la MJC de Fécamp.
-Tu réponds en français, de façon claire et concise, en texte brut uniquement (pas de Markdown : pas de **, pas de #, pas de tirets de liste).
-Tu t'appuies uniquement sur les extraits fournis dans la section « Contextes internes ».
-Si les extraits ne contiennent pas l'information, dis-le honnêtement et propose une orientation générale (par exemple contacter la MJC) sans inventer de faits."""
+from app.system_prompt import resolve_system_prompt
 
 CHUNK_SIZE = 1200
 CHUNK_OVERLAP = 200
@@ -59,7 +55,8 @@ def _retrieve_context(conn: psycopg.Connection, query_vec: list[float], k: int) 
 
 def _messages_for_mistral(body: ChatRequest, context_block: str) -> list[dict[str, str]]:
     """Build chat messages with a single system block that carries RAG context."""
-    system_content = f"{SYSTEM_PROMPT}\n\n--- Contextes internes ---\n{context_block}"
+    base_prompt = resolve_system_prompt(body.system_prompt)
+    system_content = f"{base_prompt}\n\n--- Contextes internes ---\n{context_block}"
     out: list[dict[str, str]] = [{"role": "system", "content": system_content}]
     for m in body.messages:
         if m.role not in ("user", "assistant"):

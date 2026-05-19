@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Chat } from "@/components/Chat";
+import { HomeChatPanel } from "@/components/HomeChatPanel";
 import { HealthBadge } from "@/components/HealthBadge";
 import { brand } from "@/brand/brand";
 import styles from "./page.module.css";
@@ -20,7 +20,7 @@ export default function Home() {
         <HealthBadge />
       </header>
 
-      <Chat />
+      <HomeChatPanel />
 
       <footer className={styles.footer}>
         <p>
