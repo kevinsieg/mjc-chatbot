@@ -19,6 +19,15 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/widget-test.html",
+        destination: "/widget-test",
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
