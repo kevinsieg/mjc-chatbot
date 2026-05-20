@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from app.db_util import get_data_dir
+from app.settings import get_data_dir
 
 MAX_FILE_BYTES = 512_000
 

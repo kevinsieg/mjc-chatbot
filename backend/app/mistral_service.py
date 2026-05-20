@@ -5,6 +5,7 @@ try:
 except ImportError:  # pragma: no cover - depends on mistralai wheel layout
     from mistralai import Mistral
 
+from app.models import ChatResult
 from app.settings import (
     get_embedding_dimensions,
     get_mistral_api_key,
@@ -53,8 +54,8 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
     return vectors
 
 
-def chat_complete(messages: list[dict[str, str]]) -> str:
-    """Run one non-streaming chat completion and return assistant text."""
+def chat_complete(messages: list[dict[str, str]]) -> ChatResult:
+    """Run one non-streaming chat completion and return a ChatResult."""
     key = get_mistral_api_key()
     if not key:
         raise RuntimeError("MISTRAL_API_KEY is not set")
@@ -75,4 +76,12 @@ def chat_complete(messages: list[dict[str, str]]) -> str:
         content = "".join(str(part) for part in content)
     if content is None or str(content).strip() == "":
         raise RuntimeError("Mistral returned an empty assistant message")
-    return str(content)
+    usage = getattr(response, "usage", None)
+    prompt_tokens = getattr(usage, "prompt_tokens", 0) if usage else 0
+    completion_tokens = getattr(usage, "completion_tokens", 0) if usage else 0
+    return ChatResult(
+        content=str(content),
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
+        latency_ms=0,  # caller measures wall time
+    )

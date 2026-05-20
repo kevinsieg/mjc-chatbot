@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 
 import psycopg
@@ -5,6 +6,7 @@ from pgvector.psycopg import Vector
 
 from app.db_util import ensure_document_chunks_table, get_connection
 from app.mistral_service import chat_complete, embed_texts
+from app.models import ChatResult
 from app.schemas.chat import ChatRequest
 from app.settings import get_mistral_api_key, get_rag_top_k
 from app.system_prompt import resolve_system_prompt
@@ -27,8 +29,8 @@ def chunk_text(text: str, size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP) 
     return chunks
 
 
-def _retrieve_context(conn: psycopg.Connection, query_vec: list[float], k: int) -> str:
-    """Build a single context string from the closest chunks (cosine distance)."""
+def _retrieve_context(conn: psycopg.Connection, query_vec: list[float], k: int) -> tuple[str, list[str]]:
+    """Return (context_block, list_of_unique_source_paths) from closest chunks."""
     sql = """
     SELECT source_path, content
     FROM document_chunks
@@ -37,6 +39,7 @@ def _retrieve_context(conn: psycopg.Connection, query_vec: list[float], k: int) 
     """
     max_chars = 14_000
     parts: list[str] = []
+    sources: list[str] = []
     total = 0
     with conn.cursor() as cur:
         cur.execute(sql, {"q": Vector(query_vec), "k": k})
@@ -46,11 +49,16 @@ def _retrieve_context(conn: psycopg.Connection, query_vec: list[float], k: int) 
         if total + len(block) > max_chars:
             break
         parts.append(block)
+        if source_path not in sources:
+            sources.append(source_path)
         total += len(block)
     body = "".join(parts).strip()
     if not body:
-        return "(Aucun document indexé pour le moment. Lance `make dev-data` après avoir défini MISTRAL_API_KEY.)"
-    return body
+        return (
+            "(Aucun document indexé pour le moment. Lance `make dev-data` après avoir défini MISTRAL_API_KEY.)",
+            [],
+        )
+    return body, sources
 
 
 def _messages_for_mistral(body: ChatRequest, context_block: str) -> list[dict[str, str]]:
@@ -65,7 +73,7 @@ def _messages_for_mistral(body: ChatRequest, context_block: str) -> list[dict[st
     return out
 
 
-def answer_chat_turn(body: ChatRequest) -> str:
+def answer_chat_turn(body: ChatRequest) -> ChatResult:
     """Embed last user turn, retrieve chunks, call Mistral chat."""
     if not get_mistral_api_key():
         raise ValueError("MISTRAL_API_KEY is not set")
@@ -78,10 +86,14 @@ def answer_chat_turn(body: ChatRequest) -> str:
     qvec = embed_texts([query])[0]
     k = get_rag_top_k()
     with get_connection() as conn:
-        context_block = _retrieve_context(conn, qvec, k)
+        context_block, sources = _retrieve_context(conn, qvec, k)
         conn.commit()
     messages = _messages_for_mistral(body, context_block)
-    return chat_complete(messages)
+    t0 = time.monotonic()
+    result = chat_complete(messages)
+    result.latency_ms = round((time.monotonic() - t0) * 1000)
+    result.retrieved_sources = sources
+    return result
 
 
 def ingest_markdown_dir(root: Path) -> int:

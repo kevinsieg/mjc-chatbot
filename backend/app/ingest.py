@@ -3,7 +3,8 @@
 import sys
 from pathlib import Path
 
-from app.db_util import ensure_schema_at_startup, get_data_dir
+from app.db_util import ensure_schema_at_startup
+from app.settings import get_data_dir
 from app.rag_service import ingest_markdown_dir
 
 

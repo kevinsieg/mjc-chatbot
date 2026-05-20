@@ -21,6 +21,8 @@ class ChatRequest(BaseModel):
         max_length=MAX_SYSTEM_PROMPT_LENGTH,
         description="Optional override for base system instructions (RAG context is still appended server-side).",
     )
+    session_id: str | None = Field(default=None, description="UUID tracking a user session.")
+    origin: str | None = Field(default=None, max_length=253, description="Requesting domain, e.g. 'mjcfecamp.org'.")
 
     @field_validator("system_prompt")
     @classmethod

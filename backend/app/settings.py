@@ -46,3 +46,33 @@ def get_rag_top_k() -> int:
 def get_embedding_dimensions() -> int:
     """Vector column size; must match Mistral embedding length for mistral-embed."""
     return _env_int("MISTRAL_EMBED_DIM", 1024)
+
+
+def get_nextauth_secret() -> str:
+    secret = os.getenv("NEXTAUTH_SECRET", "").strip()
+    if not secret:
+        raise RuntimeError("NEXTAUTH_SECRET is not set")
+    return secret
+
+
+def get_retention_days() -> int:
+    return _env_int("RETENTION_DAYS", 365)
+
+
+def get_cors_origins() -> list[str]:
+    """Allowed CORS origins (comma-separated)."""
+    return os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+
+
+def get_data_dir() -> str:
+    """Directory scanned for *.md during ingestion."""
+    return os.getenv("DATA_DIR", "/data").strip() or "/data"
+
+
+def get_model_cost_map() -> dict[str, float]:
+    """Price per 1 000 tokens in EUR (prompt + completion averaged)."""
+    return {
+        "mistral-small-latest": 0.0002,
+        "mistral-medium-latest": 0.00275,
+        "mistral-large-latest": 0.008,
+    }
