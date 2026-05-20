@@ -1,0 +1,45 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #18181b;
+  margin: 0;
+}
+
+.addBtn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.tableWrap {
+  background: #fff;
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  overflow: hidden;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .addBtn {
+    align-self: flex-start;
+  }
+}

@@ -33,6 +33,18 @@
 }
 
 
+.dashboardLink {
+  font-size: 0.8125rem;
+  color: var(--brand-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.dashboardLink:hover {
+  color: var(--brand-accent);
+}
+
 .footer {
   padding-top: 0.25rem;
 }

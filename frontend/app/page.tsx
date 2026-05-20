@@ -3,6 +3,7 @@ import { HomeChatPanel } from "@/components/HomeChatPanel";
 import { HealthBadge } from "@/components/HealthBadge";
 import { brand } from "@/brand/brand";
 import styles from "./page.module.css";
+import PrivacyBanner from "@/components/PrivacyBanner";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
         />
         <h1 className={styles.title}>{brand.productName}</h1>
         <HealthBadge />
+        <a href="/dashboard" className={styles.dashboardLink}>Dashboard</a>
       </header>
 
       <HomeChatPanel />
@@ -34,6 +36,7 @@ export default function Home() {
           </a>
         </p>
       </footer>
+      <PrivacyBanner />
     </main>
   );
 }

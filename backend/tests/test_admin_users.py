@@ -129,3 +129,115 @@ def test_delete_user_soft(client, admin_headers, db_conn):
 
     db_conn.execute("DELETE FROM users WHERE id = %s", (user_id,))
     db_conn.commit()
+
+
+def test_patch_user_email(client, admin_headers, db_conn):
+    db_conn.execute("DELETE FROM users WHERE email IN ('email_orig@example.com', 'email_new@example.com')")
+    db_conn.commit()
+    db_conn.execute(
+        "INSERT INTO users (email, name, password_hash, role) VALUES ('email_orig@example.com', 'E', 'x', 'staff')"
+    )
+    db_conn.commit()
+    with db_conn.cursor() as cur:
+        cur.execute("SELECT id FROM users WHERE email = 'email_orig@example.com'")
+        user_id = cur.fetchone()[0]
+
+    resp = client.patch(
+        f"/api/v1/admin/users/{user_id}",
+        json={"email": "email_new@example.com"},
+        headers=admin_headers,
+    )
+    assert resp.status_code == 200
+    assert resp.json()["email"] == "email_new@example.com"
+
+    db_conn.execute("DELETE FROM users WHERE id = %s", (user_id,))
+    db_conn.commit()
+
+
+def test_patch_user_email_duplicate(client, admin_headers, db_conn):
+    db_conn.execute("DELETE FROM users WHERE email IN ('dup_a@example.com', 'dup_b@example.com')")
+    db_conn.commit()
+    db_conn.execute(
+        "INSERT INTO users (email, name, password_hash, role) VALUES ('dup_a@example.com', 'A', 'x', 'staff'), ('dup_b@example.com', 'B', 'x', 'staff')"
+    )
+    db_conn.commit()
+    with db_conn.cursor() as cur:
+        cur.execute("SELECT id FROM users WHERE email = 'dup_b@example.com'")
+        user_b_id = cur.fetchone()[0]
+
+    resp = client.patch(
+        f"/api/v1/admin/users/{user_b_id}",
+        json={"email": "dup_a@example.com"},
+        headers=admin_headers,
+    )
+    assert resp.status_code == 409
+
+    db_conn.execute("DELETE FROM users WHERE email IN ('dup_a@example.com', 'dup_b@example.com')")
+    db_conn.commit()
+
+
+def test_patch_user_password(client, admin_headers, db_conn):
+    db_conn.execute("DELETE FROM users WHERE email = 'pwchange@example.com'")
+    db_conn.commit()
+    db_conn.execute(
+        "INSERT INTO users (email, name, password_hash, role) VALUES ('pwchange@example.com', 'PW', 'x', 'staff')"
+    )
+    db_conn.commit()
+    with db_conn.cursor() as cur:
+        cur.execute("SELECT id FROM users WHERE email = 'pwchange@example.com'")
+        user_id = cur.fetchone()[0]
+
+    resp = client.patch(
+        f"/api/v1/admin/users/{user_id}",
+        json={"password": "newpassword123"},
+        headers=admin_headers,
+    )
+    assert resp.status_code == 200
+
+    with db_conn.cursor() as cur:
+        cur.execute("SELECT password_hash FROM users WHERE id = %s", (user_id,))
+        new_hash = cur.fetchone()[0]
+    assert new_hash != "x"  # hash was updated
+
+    db_conn.execute("DELETE FROM users WHERE id = %s", (user_id,))
+    db_conn.commit()
+
+
+def test_create_user_duplicate_email(client, admin_headers, db_conn):
+    db_conn.execute("DELETE FROM users WHERE email = 'dup@example.com'")
+    db_conn.commit()
+    payload = {"email": "dup@example.com", "password": "secret123", "role": "staff"}
+
+    first = client.post("/api/v1/admin/users", json=payload, headers=admin_headers)
+    assert first.status_code == 200
+
+    second = client.post("/api/v1/admin/users", json=payload, headers=admin_headers)
+    assert second.status_code == 409
+    assert "detail" in second.json()
+
+    db_conn.execute("DELETE FROM users WHERE email = 'dup@example.com'")
+    db_conn.commit()
+
+
+def test_list_users_includes_deleted(client, admin_headers, db_conn):
+    db_conn.execute("DELETE FROM users WHERE email = 'grey@example.com'")
+    db_conn.commit()
+    db_conn.execute(
+        "INSERT INTO users (email, name, password_hash, role) VALUES ('grey@example.com', 'Grey', 'x', 'staff')"
+    )
+    db_conn.commit()
+    with db_conn.cursor() as cur:
+        cur.execute("SELECT id FROM users WHERE email = 'grey@example.com'")
+        user_id = cur.fetchone()[0]
+
+    client.delete(f"/api/v1/admin/users/{user_id}", headers=admin_headers)
+
+    list_resp = client.get("/api/v1/admin/users", headers=admin_headers)
+    assert list_resp.status_code == 200
+    users = list_resp.json()["items"]
+    match = next((u for u in users if u["email"] == "grey@example.com"), None)
+    assert match is not None
+    assert match["deleted_at"] is not None
+
+    db_conn.execute("DELETE FROM users WHERE id = %s", (user_id,))
+    db_conn.commit()

@@ -23,11 +23,22 @@ class UserCreate(BaseModel):
 class UserPatch(BaseModel):
     role: Annotated[Optional[str], Field(pattern=r"^(admin|staff)$")] = None
     name: Annotated[Optional[str], Field(max_length=100)] = None
+    email: Optional[EmailStr] = None
+    password: Annotated[Optional[str], Field(min_length=8)] = None
 
 
 class AuthVerifyRequest(BaseModel):
     email: EmailStr
     password: str
+
+
+class UserCheckRequest(BaseModel):
+    user_id: int
+
+
+class UserCheckResponse(BaseModel):
+    role: str
+    active: bool
 
 
 class AuthVerifyResponse(BaseModel):

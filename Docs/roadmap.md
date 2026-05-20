@@ -13,8 +13,8 @@
 | Improve knowledge data sources | Enrich indexed content with MJC organization chart, association statutes, and events. | Unassigned | ❌ Todo |
 | Improve answer rendering and precision (chunking) | Tune chunk size/overlap/retrieval to improve relevance and readability of answers. | Unassigned | ❌ Todo |
 | Improve system prompt (role/limits/instructions) | Refine assistant role, boundaries, and behavioral rules for safer and clearer responses. | Unassigned | ❌ Todo |
-| Create a classic relational database layer for dashboard users | Add standard relational tables (possibly in same PostgreSQL instance as pgvector) with MJC user fixtures for usage/history dashboard. | Unassigned | ❌ Todo |
-| Build dedicated dashboard UI with auth and stats | Create separate admin interface with login and chatbot usage/statistics pages. | Unassigned | ❌ Todo |
+| Create a classic relational database layer for dashboard users | Add standard relational tables (possibly in same PostgreSQL instance as pgvector) with MJC user fixtures for usage/history dashboard. | Käv | ✅ Finish |
+| Build dedicated dashboard UI with auth and stats | Create separate admin interface with login and chatbot usage/statistics pages. | Käv | ✅ Finish |
 | Enable Cloudflare rate limiting | Configure Cloudflare protections and rate limits for chatbot/API endpoints. | Unassigned | ❌ Todo |
 | Add Ansible deployment scripts | Provide automated deployment playbooks/roles for infrastructure and application rollout. | Unassigned | ❌ Todo |
 

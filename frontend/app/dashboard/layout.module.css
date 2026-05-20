@@ -1,0 +1,118 @@
+.shell {
+  min-height: 100vh;
+  background: #f1f5f9;
+}
+
+.nav {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  padding: 0 1.5rem;
+  height: 4rem;
+  background: #0d2952;
+  border-bottom: 1px solid #0f3366;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  gap: 1rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logoWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+.logo {
+  object-fit: cover;
+  display: block;
+}
+
+.brandName {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.navLinks {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: center;
+}
+
+.link {
+  font-size: 0.875rem;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.signout {
+  background: none;
+  border: none;
+  font-size: 0.8125rem;
+  color: #93c5fd;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.signout:hover {
+  color: #fff;
+}
+
+.content {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .nav {
+    grid-template-columns: 1fr auto;
+    height: auto;
+    padding: 0.625rem 1rem;
+  }
+
+  .navLinks {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    padding-top: 0.375rem;
+    margin-top: 0.125rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .brandName {
+    display: none;
+  }
+
+  .link {
+    font-size: 0.8125rem;
+    padding: 0.3rem 0.5rem;
+  }
+
+  .content {
+    padding: 1rem;
+  }
+}
