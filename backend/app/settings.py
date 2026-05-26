@@ -69,6 +69,18 @@ def get_data_dir() -> str:
     return os.getenv("DATA_DIR", "/data").strip() or "/data"
 
 
+def get_seed_admin_email() -> str | None:
+    """Dev bootstrap: admin email to upsert on startup when password is also set."""
+    email = os.getenv("SEED_ADMIN_EMAIL", "").strip()
+    return email or None
+
+
+def get_seed_admin_password() -> str | None:
+    """Dev bootstrap: admin password to upsert on startup when email is also set."""
+    password = os.getenv("SEED_ADMIN_PASSWORD", "").strip()
+    return password or None
+
+
 def get_model_cost_map() -> dict[str, float]:
     """Price per 1 000 tokens in EUR (prompt + completion averaged)."""
     return {

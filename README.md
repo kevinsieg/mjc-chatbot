@@ -16,8 +16,9 @@ mjc-chatbot is a chatbot project for MJC Fecamp
 1. Copy `.env.example` to `.env` and set **`MISTRAL_API_KEY`** (required for chat + ingestion).
 2. `make dev-build` — build images
 3. `make dev-run` — start PostgreSQL, API, and frontend (`http://localhost:3000`, API `http://localhost:8000`, docs `http://localhost:8000/docs`)
-4. In another terminal (stack still running): `make dev-data` — chunk Markdown under `./data`, embed with Mistral, store vectors in Postgres (`document_chunks`).
-5. `make dev-kill` when finished
+4. **Dashboard login (local dev):** set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in `.env` (see `.env.example`). The backend upserts that admin on every startup so you can sign in at `http://localhost:3000/dashboard/login` without a manual CLI step. To create or reset an admin manually: `docker compose exec backend python -m app.admin_cli seed-admin --email YOU@example.com --password 'YOUR_PASSWORD'`.
+5. In another terminal (stack still running): `make dev-data` — chunk Markdown under `./data`, embed with Mistral, store vectors in Postgres (`document_chunks`).
+6. `make dev-kill` when finished
 
 The smoke check calls same-origin `GET /api/backend/health`; Next.js rewrites that to the FastAPI service (`BACKEND_INTERNAL_URL`, default `http://backend:8000` at image build). So the browser never needs a public URL for port 8000. To reset the database volume: `docker compose down -v` then `make dev-run` again. For `next dev` on the host only, set `BACKEND_INTERNAL_URL=http://127.0.0.1:8000` in `frontend/.env.local`.
 
