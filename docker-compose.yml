@@ -1,4 +1,17 @@
 services:
+  traefik:
+    image: traefik:v3
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=INFO"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+
   db:
     image: pgvector/pgvector:pg16
     environment:
@@ -18,8 +31,7 @@ services:
 
   backend:
     build: ./backend
-    ports:
-      - "8000:8000"
+    # No host port binding — only reachable via Docker network
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://mjc:mjc@db:5432/mjcbot}
       MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
@@ -40,10 +52,18 @@ services:
       args:
         BACKEND_INTERNAL_URL: http://backend:8000
         NEXT_PUBLIC_WIDGET_BASE_URL: ${NEXT_PUBLIC_WIDGET_BASE_URL:-http://localhost:3000}
-    ports:
-      - "3000:3000"
+    # No host port binding — Traefik handles external traffic
     depends_on:
       - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      - "traefik.http.middlewares.chat-limit.ratelimit.average=${TRAEFIK_RATE_LIMIT_AVERAGE:-10}"
+      - "traefik.http.middlewares.chat-limit.ratelimit.burst=${TRAEFIK_RATE_LIMIT_BURST:-20}"
+      - "traefik.http.middlewares.chat-limit.ratelimit.period=1m"
+      - "traefik.http.routers.frontend.middlewares=chat-limit"
 
 volumes:
   pgdata:
