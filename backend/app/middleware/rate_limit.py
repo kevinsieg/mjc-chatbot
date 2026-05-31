@@ -21,9 +21,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         return request.client.host if request.client else "unknown"
 
     async def dispatch(self, request: Request, call_next: Callable):
+        if request.url.path == "/health":
+            return await call_next(request)
         ip = self._get_client_ip(request)
         now = time()
         self._calls[ip] = [t for t in self._calls[ip] if now - t < self.period]
+        if not self._calls[ip]:
+            del self._calls[ip]
         if len(self._calls[ip]) >= self.max_calls:
             return JSONResponse(
                 status_code=429,
