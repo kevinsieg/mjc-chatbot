@@ -63,7 +63,10 @@ services:
       - "traefik.http.middlewares.chat-limit.ratelimit.average=${TRAEFIK_RATE_LIMIT_AVERAGE:-10}"
       - "traefik.http.middlewares.chat-limit.ratelimit.burst=${TRAEFIK_RATE_LIMIT_BURST:-20}"
       - "traefik.http.middlewares.chat-limit.ratelimit.period=1m"
-      - "traefik.http.routers.frontend.middlewares=chat-limit"
+      - "traefik.http.routers.chat-api.rule=PathPrefix(`/api/backend/api/v1/chat`)"
+      - "traefik.http.routers.chat-api.entrypoints=web"
+      - "traefik.http.routers.chat-api.middlewares=chat-limit"
+      - "traefik.http.services.chat-api.loadbalancer.server.port=3000"
 
 volumes:
   pgdata:
