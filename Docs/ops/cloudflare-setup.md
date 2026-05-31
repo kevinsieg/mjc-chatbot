@@ -38,16 +38,35 @@ Cloudflare publishes its IP ranges at:
 ### Via iptables (run as root on OVH server)
 
 ```bash
-# Allow SSH first (do not lock yourself out)
-iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+# IMPORTANT: Verify your current rules first — this script assumes no prior DROP rules on port 80.
+# Run: iptables -L INPUT -n --line-numbers
+# and ip6tables -L INPUT -n --line-numbers
 
-# Allow Cloudflare IPv4 ranges on port 80
-for ip in $(curl -s https://www.cloudflare.com/ips-v4); do
+# Insert SSH rule at the top so it is always evaluated first
+iptables -I INPUT 1 -p tcp --dport 22 -j ACCEPT
+
+# Fetch Cloudflare IPv4 ranges and allow them on port 80
+CF_IPV4=$(curl -sf https://www.cloudflare.com/ips-v4)
+if [ -z "$CF_IPV4" ]; then
+  echo "ERROR: Failed to fetch Cloudflare IPv4 ranges. Aborting — no DROP rule added."
+  exit 1
+fi
+for ip in $CF_IPV4; do
   iptables -A INPUT -p tcp --dport 80 -s $ip -j ACCEPT
 done
-
-# Drop all other traffic on port 80
 iptables -A INPUT -p tcp --dport 80 -j DROP
+
+# If your server has a public IPv6 address, repeat for IPv6:
+CF_IPV6=$(curl -sf https://www.cloudflare.com/ips-v6)
+if [ -z "$CF_IPV6" ]; then
+  echo "ERROR: Failed to fetch Cloudflare IPv6 ranges. Aborting — no IPv6 DROP rule added."
+  exit 1
+fi
+for ip in $CF_IPV6; do
+  ip6tables -A INPUT -p tcp --dport 80 -s $ip -j ACCEPT
+done
+ip6tables -I INPUT 1 -p tcp --dport 22 -j ACCEPT
+ip6tables -A INPUT -p tcp --dport 80 -j DROP
 
 # Persist rules (Debian/Ubuntu)
 apt-get install iptables-persistent -y
@@ -72,7 +91,7 @@ Expected: 200 response served through Cloudflare.
 
 1. Browser → `http://<your-domain>/` → should load the chatbot UI
 2. Send a chat message → should work (200)
-3. Send 25 rapid messages → should get 429 from Traefik after the burst
+3. Send 25 rapid messages → should get 429 from Traefik after the burst (Traefik rate limit, not Cloudflare — Cloudflare Pro rate limiting is optional)
 4. Direct IP access `http://<OVH-IP>/` → should be blocked by firewall
 
 ## Cloudflare IP ranges
