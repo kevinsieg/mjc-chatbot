@@ -12,6 +12,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.max_calls = max_calls
         self.period = period
+        # grows proportional to unique IPs seen; acceptable for single-instance deployments
         self._calls: dict[str, list[float]] = defaultdict(list)
 
     def _get_client_ip(self, request: Request) -> str:
@@ -26,8 +27,6 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         ip = self._get_client_ip(request)
         now = time()
         self._calls[ip] = [t for t in self._calls[ip] if now - t < self.period]
-        if not self._calls[ip]:
-            del self._calls[ip]
         if len(self._calls[ip]) >= self.max_calls:
             return JSONResponse(
                 status_code=429,
