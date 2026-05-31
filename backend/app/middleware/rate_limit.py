@@ -1,6 +1,6 @@
 from collections import defaultdict
+from collections.abc import Callable
 from time import time
-from typing import Callable
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -18,11 +18,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     def _get_client_ip(self, request: Request) -> str:
         forwarded = request.headers.get("x-forwarded-for")
         if forwarded:
+            # Leftmost IP is the real client when Traefik is configured with trustedIPs
+            # (Traefik strips client-supplied XFF from untrusted peers, then prepends the real peer IP).
             return forwarded.split(",")[0].strip()
         return request.client.host if request.client else "unknown"
 
     async def dispatch(self, request: Request, call_next: Callable):
-        if request.url.path == "/health":
+        if request.url.path in ("/health", "/health/"):
             return await call_next(request)
         ip = self._get_client_ip(request)
         now = time()
@@ -31,6 +33,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Too many requests. Please slow down."},
+                headers={"Retry-After": str(self.period)},
             )
         self._calls[ip].append(now)
         return await call_next(request)

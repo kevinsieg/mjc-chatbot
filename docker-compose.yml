@@ -6,6 +6,9 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--log.level=INFO"
+      # Trust XFF only from these IPs — strips client-supplied headers from untrusted peers.
+      # Local dev default: Docker internal ranges. Production: add Cloudflare CIDRs via TRAEFIK_TRUSTED_IPS.
+      - "--entryPoints.web.forwardedHeaders.trustedIPs=${TRAEFIK_TRUSTED_IPS:-127.0.0.1/32,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}"
     ports:
       - "80:80"
     volumes:
@@ -66,7 +69,7 @@ services:
       - "traefik.http.routers.chat-api.rule=PathPrefix(`/api/backend/api/v1/chat`)"
       - "traefik.http.routers.chat-api.entrypoints=web"
       - "traefik.http.routers.chat-api.middlewares=chat-limit"
-      - "traefik.http.services.chat-api.loadbalancer.server.port=3000"
+      - "traefik.http.routers.chat-api.service=frontend"
 
 volumes:
   pgdata:
